@@ -1,14 +1,34 @@
-const http = require("http");
-const fs = require("fs");
+const express = require("express");
+const app = express();
+const httpServer = require("http").createServer(app);
+const WebSocket = require("ws");
+const PORT = 3001;
 
-const server = http.createServer();
-
-server.on("request", (req, res) => {
-  res.writeHead(200, { "Content-Type": "text/html" });
-  res.write("<h1>Hello from my Node blog :)</h1>");
-  res.end();
+app.get("/", (req, res) => {
+  res.sendFile("index.html", { root: __dirname });
 });
 
-server.listen(3001);
+const wss = new WebSocket.Server({ server: httpServer });
 
-console.log("Server started listening on port 3001");
+wss.broadcast = (data) => {
+  wss.clients.forEach((client) => {
+    client.send(data);
+  });
+};
+
+wss.on("connection", (ws) => {
+  console.log("WebSocket connection established");
+  const visitorsCount = wss.clients.size;
+
+  ws.readyState === ws.OPEN && ws.send("Welcome to the server");
+
+  wss.broadcast(visitorsCount);
+
+  ws.on("close", () => {
+    console.log("A client has disconnected");
+  });
+});
+
+httpServer.listen(PORT, () => {
+  console.log("Server started listening on port 3001");
+});

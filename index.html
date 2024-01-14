@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>blog.thomb6n</title>
+</head>
+<body>
+    <p><span id="visitors-count">0</span> <span id="visitors-context">people are</span> visiting this blog right now</p>
+
+    <script defer>
+        const proto = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const ws = new WebSocket(`${proto}://${window.location.host}`);
+        const visitorsCountEl = document.getElementById('visitors-count');
+        const visitorsContextEl = document.getElementById('visitors-context');
+
+        ws.onmessage = (event) => {
+            visitorsContextEl.innerText = 'people are';
+            visitorsCountEl.innerText = event.data;
+
+            if ('1' === event.data) {
+                visitorsContextEl.innerText = 'person is';
+            }
+        }
+    </script>
+</body>
+</html>
